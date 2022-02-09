@@ -17,19 +17,22 @@ MainWindow::MainWindow(QWidget *parent)
     m_Process = new QProcess(this);
     connect(m_Process,SIGNAL(readyReadStandardOutput()),this,SLOT(onStandardOutput()));
     connect(m_Process,SIGNAL(readyReadStandardError()),this,SLOT(onErrorOutput()));
-    std::ifstream fd("./BlogPath.txt");
-    char tmp_path[150];
+    std::ifstream fd("./BlogPath.txt");//写入博客路径
+    std::string tmp_path;
     fd>>tmp_path;
     fd.close();
-    BlogPath.append(tmp_path);
+    if(!tmp_path.empty())
+        BlogPath.append(tmp_path.c_str());
     fd.open("./github_repo.txt");
     fd>>tmp_path;
-    githuboRepoPath = tmp_path;
     fd.close();
+    if(!tmp_path.empty())           //写入GitHub路径
+        githuboRepoPath = tmp_path.c_str();
     fd.open("./gitee_repo.txt");
     fd>>tmp_path;
     fd.close();
-    giteeRepoPath = tmp_path;
+    if(!tmp_path.empty())           //写入gitee路径
+        giteeRepoPath = tmp_path.c_str();
     isInput = false; //记录textEdit是否变为可输入状态，如果是，那么肯定处于添加图片的状态，默认不是添加图片的状态
     if(!BlogPath.isEmpty()&&(!githuboRepoPath.isEmpty()||!giteeRepoPath.isEmpty()))
     {
@@ -39,7 +42,8 @@ MainWindow::MainWindow(QWidget *parent)
     }
     else
     {
-        QMessageBox::information(nullptr,"注意","当前博客尚未完成初始化信息，请点击蓝色按钮完成必要的初始化！");
+        ui->textEdit->append("当前博客尚未完成初始化信息，请点击蓝色按钮完成必要的初始化！\n");
+        ui->textEdit->append(QString(76,'-')+'\n');
     }
     ui->debug_link->setText(R"(<html>    <style>
                     a {
@@ -347,8 +351,8 @@ void MainWindow::on_release_clicked()
     writer<<"git config --global http.proxy  http://127.0.0.1:7890"<<'\n';
     writer<<"git config --global https.proxy  https://127.0.0.1:7890"<<'\n';
 
-    //注意延时三秒，否则可能出现代理不管用
-    writer<<"TIMEOUT /T 3"<<'\n';
+    //注意延时五秒，否则可能出现代理不管用
+    writer<<"TIMEOUT /T 5"<<'\n';
     writer<<"git pull github master"<<'\n';
     writer<<"git push -u github master"<<'\n';
     //最后再把代理关上
