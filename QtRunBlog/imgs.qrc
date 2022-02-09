@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>hexo.png</file>
+        <file>_提示.png</file>
+    </qresource>
+</RCC>

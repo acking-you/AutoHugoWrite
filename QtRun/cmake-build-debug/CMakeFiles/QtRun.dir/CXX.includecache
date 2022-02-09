@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+D:/CLion Project/QtRun/main.cpp
+fstream
+-
+iostream
+-
+string
+-
+sys/stat.h
+-
+unistd.h
+-
+windows.h
+-
+vector
+-
+unordered_map
+-
+ctime
+-
+filesystem
+-
+random
+-
+
