@@ -46,6 +46,8 @@ private slots:
 
     void on_kill_porcessbyPID_clicked();
 
+    void on_setEditor_clicked();
+
 private:
     void show_Blogpath();
 

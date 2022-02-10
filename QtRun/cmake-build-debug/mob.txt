@@ -1,0 +1,13 @@
+---
+title: "%s"
+
+date: %D
+draft: true
+tags: ["%s"]
+categories: ["#"]
+
+featuredImage: "%T"
+featuredImagePreview: "%T"
+description: "%s"
+---
+

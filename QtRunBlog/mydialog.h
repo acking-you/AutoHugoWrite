@@ -16,7 +16,7 @@ public:
     ~myDialog();
     void setTitleTip(const QString& str);
     void setTip(const QString& str);
-
+    virtual void keyPressEvent(QKeyEvent *event)override; //重写enter键方便直接输入
     bool getCurState();
     QString getLine1Text();
     QString getLine2Text();

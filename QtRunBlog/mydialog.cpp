@@ -1,6 +1,8 @@
 #include "mydialog.h"
 #include "./ui_mydialog.h"
 
+#include <QKeyEvent>
+
 myDialog::myDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::myDialog)
@@ -24,6 +26,13 @@ void myDialog::setTitleTip(const QString &str)
 void myDialog::setTip(const QString &str)
 {
     this->ui->lineEdit->setText(str);
+}
+
+void myDialog::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key()==Qt::Key_Return){
+         on_bt_ok_clicked();
+     }
 }
 
 bool myDialog::getCurState()

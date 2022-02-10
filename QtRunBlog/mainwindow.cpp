@@ -23,16 +23,19 @@ MainWindow::MainWindow(QWidget *parent)
     fd.close();
     if(!tmp_path.empty())
         BlogPath.append(tmp_path.c_str());
+    tmp_path.clear();
     fd.open("./github_repo.txt");
     fd>>tmp_path;
     fd.close();
     if(!tmp_path.empty())           //写入GitHub路径
         githuboRepoPath = tmp_path.c_str();
+    tmp_path.clear();
     fd.open("./gitee_repo.txt");
     fd>>tmp_path;
     fd.close();
     if(!tmp_path.empty())           //写入gitee路径
         giteeRepoPath = tmp_path.c_str();
+
     isInput = false; //记录textEdit是否变为可输入状态，如果是，那么肯定处于添加图片的状态，默认不是添加图片的状态
     if(!BlogPath.isEmpty()&&(!githuboRepoPath.isEmpty()||!giteeRepoPath.isEmpty()))
     {
@@ -42,8 +45,14 @@ MainWindow::MainWindow(QWidget *parent)
     }
     else
     {
-        ui->textEdit->append("当前博客尚未完成初始化信息，请点击蓝色按钮完成必要的初始化！\n");
-        ui->textEdit->append(QString(76,'-')+'\n');
+        if(BlogPath.isEmpty()){
+            ui->textEdit->append("当前博客尚未完成初始化信息，请点击蓝色按钮完成必要的初始化！\n");
+            ui->textEdit->append(QString(76,'-')+'\n');}
+        else{
+            ui->textEdit->append("本地博客位置已经初始化，但远端尚未初始化。\n建议先在本地写几篇文章调试后再进行远端的初始化！\n");
+            ui->textEdit->append(QString(76,'-')+'\n');
+            show_Blogpath();
+        }
     }
     ui->debug_link->setText(R"(<html>    <style>
                     a {
@@ -54,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
                     a {
                         color:#3281b8;
                     }
-                </style><head/><body><p><a href="#">视频教程</a></p></body></html>)");
+                </style><head/><body><p><a href="https://www.bilibili.com/video/BV11S4y1G7SW">视频教程</a></p></body></html>)");
 }
 
 MainWindow::~MainWindow()
@@ -168,8 +177,10 @@ void MainWindow::on_start_write_clicked()
         return;
     QString text1 = input.getLine1Text();
     QString text2 = input.getLine2Text();
-    if(text1.isEmpty()||text2.isEmpty()||text1.contains(' ')||text2.contains(' '))
+    if(text1.isEmpty()||text2.isEmpty()||text1.contains(' ')||text2.contains(' ')){
+        QMessageBox::warning(nullptr,"提示","输入非法");
         return;
+    }
     QString cmd = "./QtRun " + text1 + ' ' + text2;
     startCmd(cmd);
 }
@@ -215,12 +226,19 @@ void MainWindow::on_addImg_clicked()
         ui->textEdit->clear();
         setBtnFromState(true);//表示您可以开始输入了
     }else{
-        QString imgs = ui->textEdit->toPlainText();
+        if(ui->textEdit->toPlainText().isEmpty()){//为空提示输入为空
+            QMessageBox::information(nullptr,"提示","输入为空");
+            return;
+        }
+        QStringList imgs = ui->textEdit->toPlainText().split('\n');
         std::ofstream writer("./initImg.txt",std::ios::app);
-        writer<<imgs.toStdString()<<'\n';
+        for(auto& img:imgs){
+        if(img.endsWith(".png")||img.endsWith(".jpg")||img.endsWith(".jpeg")||img.endsWith(".bmp")) //如果是图片链接就写入
+            writer<<"\n\r"<<img.toStdString();
+        }
         writer.close();
         setBtnFromState(false);//回到初始状态，并且不能再输入
-        QMessageBox::information(nullptr,"提示","成功添加图片");
+        QMessageBox::information(nullptr,"提示","成功添加图片（非图片链接会跳过）");
     }
 }
 
@@ -272,12 +290,12 @@ void MainWindow::on_init_clicked()
     input.setLine1Test("请输入github仓库");
     input.setLine2Test("请输入gitee仓库");
     input.exec();
-    auto local_repo = BlogPath + "/public";
-    if(!QDir(local_repo).exists()){
-        QMessageBox::warning(nullptr,"错误","public文件夹不存在" );
-        return;
-    }
     if(input.getCurState()){
+        auto local_repo = BlogPath + "\\public";
+        if(!QDir(local_repo).exists()){
+            QMessageBox::warning(nullptr,"错误","public文件夹不存在，请先进行本地调试生成public文件夹" );
+            return;
+        }
         //写入远程关联仓库地址
         QString repo_github = input.getLine1Text();
         QString repo_gitee = input.getLine2Text();
@@ -285,9 +303,14 @@ void MainWindow::on_init_clicked()
             QMessageBox::warning(nullptr,"注意","两个仓库不能都为空");
             return;
         }
+
         std::ofstream writer;
         if(!repo_github.isEmpty())
         {
+            if(!repo_gitee.endsWith(".git")){
+                QMessageBox::warning(nullptr,"提示","输入GitHub仓库地址有误");
+                return;
+            }
             writer.open("./github_repo.txt");
             writer<<repo_github.toStdString();
             writer.close();
@@ -295,6 +318,10 @@ void MainWindow::on_init_clicked()
         }
         if(!repo_gitee.isEmpty())
         {
+            if(!repo_gitee.endsWith(".git")){
+                QMessageBox::warning(nullptr,"提示","输入Gitee仓库地址有误");
+                return;
+            }
             writer.open("./gitee_repo.txt");
             writer<<repo_gitee.toStdString();
             writer.close();
@@ -305,13 +332,20 @@ void MainWindow::on_init_clicked()
         auto cmd_cd = QString("cd /d") + local_repo;
         writer<<cmd_cd.toStdString()<<'\n';
         writer<<"git init"<<'\n';
-        writer<<"git remote add github "<<githuboRepoPath.toStdString()<<'\n';
-        writer<<"git remote add gitee "<<giteeRepoPath.toStdString()<<'\n';
+        if(!repo_github.isEmpty()){
+            writer<<"git remote remove github\n";
+            writer<<"git remote add github "<<repo_github.toStdString()<<'\n';
+        }
+        if(!repo_gitee.isEmpty()){
+            writer<<"git remote remove gitee\n";
+            writer<<"git remote add gitee "<<repo_gitee.toStdString()<<'\n';
+        }
         writer.close();
         startCmd("./exec_code.bat");
-        ui->textEdit->append("github更新仓库为："+githuboRepoPath + '\n');
-        ui->textEdit->append("gitee更新仓库为："+giteeRepoPath+'\n');
-        ui->textEdit->update();
+        ui->textEdit->append(QString(76,'-')+'\n');
+        ui->textEdit->append("当前博客地址已更新\n");
+        show_Blogpath();
+
     }
 }
 //git add .
@@ -380,7 +414,10 @@ void MainWindow::on_check_processByport_clicked()
         QMessageBox::warning(nullptr,"提示","输入为空");
         return;
     }
-
+    if(text.toUInt()==0&&text[0]!='0'){
+        QMessageBox::warning(nullptr,"提示","输入非法");
+        return;
+    }
     auto content = GetProcessIDByPort(text.toUInt());
     if(content.isEmpty()){
         QMessageBox::warning(nullptr,"提示","该端口号暂时没被占用");
@@ -425,7 +462,40 @@ void MainWindow::on_kill_porcessbyPID_clicked()
         QMessageBox::warning(nullptr,"提示","输入为空");
         return;
     }
+    if(text.toUInt()==0&&text[0]!='0')
+    {
+        QMessageBox::warning(nullptr,"提示","输入非法");
+        return;
+    }
     QString qcmd = QString("taskkill /f /t /im %1").arg(text.toUInt());
     startCmd(qcmd);
+}
+
+
+void MainWindow::on_setEditor_clicked()
+{
+    m_Process->kill();
+    m_Process->waitForFinished(3000);
+    myDialog input;
+    input.hide2();
+    input.setTip("用于写作的编辑器路径");
+    input.setLable1Test("编辑器路径");
+    input.setLine1Test("请输入编辑器路径");
+    input.exec();
+    if(input.getCurState()){
+        auto ed_path = input.getLine1Text();
+        if(!QFile(ed_path).exists()){//如果这个软件地址不存在，那么就是无效地址，给出提示
+            QMessageBox::warning(nullptr,"提示","文件路径不存在");
+            return;
+        }
+        std::ofstream writer("./ed_Path.txt");
+        if(!writer.is_open()){
+            QMessageBox::warning(nullptr,"提示","ed_Path文件写入失败");
+            return;
+        }
+        writer<<ed_path.toStdString();
+        writer.close();
+        QMessageBox::information(nullptr,"提示","路径更新成功");
+    }
 }
 

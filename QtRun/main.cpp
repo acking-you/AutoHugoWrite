@@ -164,7 +164,7 @@ time_t now = time(NULL);
 //TODO 打开typora软件
 void open_exe_from_path(const char *path) {
     WinExec(path, SW_SHOWNORMAL);
-    cout << "open editor successfully!" << endl;
+    cout << "open your custom editor successfully!" << endl;
 }
 
 //TODO 打印内容
@@ -316,12 +316,17 @@ int main(int argc, char const *argv[]) {
     ifstream reader;//读取编辑器的地址并打开
     reader.open("./ed_Path.txt");
     if(!reader.is_open()){
-        exit_print("文件编辑器地址未设置，无法打开编辑器");
+        exit_print("file reader failed in read editorPath");
     }
     string str;
     reader>>str;
     if(!str.empty())
         open_exe_from_path(str.c_str());
+    else{   //如果文件编辑器路径未设置，则默认用vscode打开目录
+        string cmd = "code "+POSTS_PATH.string();
+        system(cmd.c_str());
+        printf("open vscode successfully!\n");
+    }
     reader.close();
     cout << "finish yet!" << endl;
     return 0;
