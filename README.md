@@ -1,6 +1,6 @@
 ## 使用教程
 
-[参考视频教程](#)
+[参考视频教程](https://www.bilibili.com/video/BV11S4y1G7SW)
 
 ## 项目介绍
 
