@@ -4,7 +4,7 @@
 
 ## 项目介绍
 
-> 温馨提示：如果本地还未搭建 hugo 博客，可以使用我的另一个 [hugo 博客自动搭建工具](#)
+> 温馨提示：如果本地还未搭建 hugo 博客，可以使用我的另一个 [hugo 博客自动搭建工具](https://github.com/ACking-you/AutoHugoSetup)
 
 ![AutoHugoWrite](https://s2.loli.net/2022/02/09/yJY4VAImClOKcqE.png)
 
