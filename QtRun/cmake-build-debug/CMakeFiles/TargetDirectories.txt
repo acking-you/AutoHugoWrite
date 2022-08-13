@@ -1,3 +1,0 @@
-D:/CLion Project/QtRun/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-D:/CLion Project/QtRun/cmake-build-debug/CMakeFiles/QtRun.dir
-D:/CLion Project/QtRun/cmake-build-debug/CMakeFiles/edit_cache.dir
